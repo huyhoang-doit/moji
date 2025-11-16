@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useNavigate } from 'react-router';
 
 const signInSchema = z.object({
   username: z
@@ -32,6 +34,9 @@ export function SigninForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
+  const navigate = useNavigate();
+
+  // làm việc với useForm
   const {
     register,
     handleSubmit,
@@ -40,8 +45,14 @@ export function SigninForm({
     resolver: zodResolver(signInSchema)
   });
 
-  const onSubmit = (data: SignInFormValues) => {
-    console.log(data);
+  // lấy hàm signIn từ store
+  const { signIn } = useAuthStore();
+
+  // xử lý khi submit form
+  const onSubmit = async (data: SignInFormValues) => {
+    const { username, password } = data;
+    await signIn(username, password);
+    navigate('/');
   };
 
   return (
