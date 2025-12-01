@@ -18,8 +18,8 @@ const userSchema = new mongoose.Schema(
     },
     hashedPassword: { type: String, required: true },
     displayName: { type: String, required: true, trim: true },
-    avartarUrl: { type: String },
-    avartarId: { type: String },
+    avatarUrl: { type: String },
+    avatarId: { type: String },
     bio: {
       type: String,
       maxlength: 500
