@@ -66,6 +66,9 @@ export const useAuthStore = create<AuthState>()(
           // lấy data get me
           await get().fetchMe();
 
+          // lấy thông tin conversations
+          useChatStore.getState().fetchConversations();
+
           toast.success('Đăng nhập thành công!');
         } catch (error) {
           toast.error('Đăng nhập thất bại. Vui lòng thử lại.');
