@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { authService } from '@/services/authService';
 import type { AuthState } from '@/types/store';
 import { persist } from 'zustand/middleware';
+import { useChatStore } from './useChatStore';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -25,6 +26,7 @@ export const useAuthStore = create<AuthState>()(
 
         // clear local storage 
         localStorage.clear()
+        useChatStore.getState().reset();
       },
 
 
@@ -57,6 +59,7 @@ export const useAuthStore = create<AuthState>()(
 
           // clear local storage
           localStorage.clear();
+          useChatStore.getState().reset();
 
           get().setAccessToken(data.accessToken);
 
