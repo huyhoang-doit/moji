@@ -9,6 +9,10 @@ import conversationRoute from './routes/conversationRoute.js';
 import cookieParser from 'cookie-parser';
 import { protectedRoute } from './middlewares/authMiddleware.js';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
+
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -22,6 +26,15 @@ app.use(
     credentials: true
   })
 );
+
+// setup swagger
+const swaggerDocument = JSON.parse(
+  fs.readFileSync('./src/swagger.json', 'utf-8')
+);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+
 // public router
 app.use('/api/auth', authRouter);
 

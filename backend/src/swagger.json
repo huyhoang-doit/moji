@@ -1,0 +1,766 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Moji API",
+    "version": "1.0.0",
+    "description": "API documentation for the Moji social app — includes authentication, friend management, messaging, and conversations."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5001/api",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and token management"
+    },
+    {
+      "name": "Users",
+      "description": "User-related endpoints"
+    },
+    {
+      "name": "Friends",
+      "description": "Friend requests and relationships"
+    },
+    {
+      "name": "Messages",
+      "description": "Direct and group messaging"
+    },
+    {
+      "name": "Conversations",
+      "description": "Conversation and chat management"
+    }
+  ],
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "summary": "Sign up a new user",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "summary": "Sign in a user",
+        "description": "Log in with username and password. Returns an access token in the response and a refresh token in cookies.",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid credentials"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/auth/signout": {
+      "post": {
+        "summary": "Sign out user",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed out successfully"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "summary": "Refresh access token",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "Token refreshed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or expired refresh token"
+          }
+        }
+      }
+    },
+    "/users/me": {
+      "get": {
+        "summary": "Get current user profile",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/friends/requests": {
+      "get": {
+        "summary": "Get friend requests",
+        "tags": [
+          "Friends"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "accepted",
+                "declined"
+              ]
+            },
+            "description": "Filter by request status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friend requests retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FriendRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Send a friend request",
+        "tags": [
+          "Friends"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FriendRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Friend request sent successfully"
+          },
+          "400": {
+            "description": "Invalid request"
+          }
+        }
+      }
+    },
+    "/friends/requests/{requestId}/accept": {
+      "post": {
+        "summary": "Accept a friend request",
+        "tags": [
+          "Friends"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the friend request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friend request accepted successfully"
+          },
+          "404": {
+            "description": "Request not found"
+          }
+        }
+      }
+    },
+    "/friends/requests/{requestId}/decline": {
+      "post": {
+        "summary": "Decline a friend request",
+        "tags": [
+          "Friends"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the friend request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friend request declined successfully"
+          },
+          "404": {
+            "description": "Request not found"
+          }
+        }
+      }
+    },
+    "/friends": {
+      "get": {
+        "summary": "Get all friends",
+        "tags": [
+          "Friends"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of friends",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/messages/direct": {
+      "post": {
+        "summary": "Send a direct message",
+        "tags": [
+          "Messages"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message sent successfully"
+          }
+        }
+      }
+    },
+    "/messages/group": {
+      "post": {
+        "summary": "Send a message in a group conversation",
+        "tags": [
+          "Messages"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Group message sent successfully"
+          }
+        }
+      }
+    },
+    "/conversations": {
+      "get": {
+        "summary": "Get all conversations",
+        "tags": [
+          "Conversations"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "direct",
+                "group"
+              ]
+            },
+            "description": "Filter conversations by type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Conversations fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConversationSummary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new conversation",
+        "tags": [
+          "Conversations"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Conversation created successfully"
+          }
+        }
+      }
+    },
+    "/conversations/{conversationId}/messages": {
+      "get": {
+        "summary": "Get all messages in a conversation",
+        "tags": [
+          "Conversations"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "conversationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Conversation ID"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            },
+            "description": "Number of messages to retrieve"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Offset for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Messages retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Message"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "SignUpRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "password",
+          "email",
+          "firstName",
+          "lastName"
+        ],
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        }
+      },
+      "SignInRequest": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "User HaiUser has logged in!"
+          },
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOi..."
+          }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        }
+      },
+      "UserSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "FriendRequestBody": {
+        "type": "object",
+        "required": [
+          "to"
+        ],
+        "properties": {
+          "to": {
+            "type": "string",
+            "description": "Receiver user ID"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "FriendRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "from": {
+            "$ref": "#/components/schemas/UserSummary"
+          },
+          "to": {
+            "$ref": "#/components/schemas/UserSummary"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "declined"
+            ]
+          }
+        }
+      },
+      "DirectMessageRequest": {
+        "type": "object",
+        "required": [
+          "recipientId",
+          "content"
+        ],
+        "properties": {
+          "recipientId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "GroupMessageRequest": {
+        "type": "object",
+        "required": [
+          "conversationId",
+          "content"
+        ],
+        "properties": {
+          "conversationId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "senderId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateConversationRequest": {
+        "type": "object",
+        "required": [
+          "type",
+          "memberIds"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "direct",
+              "group"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Name for group conversation (optional for direct)"
+          },
+          "memberIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ConversationSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "direct",
+              "group"
+            ]
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSummary"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
