@@ -4,7 +4,15 @@ import ChatAppPage from './pages/ChatAppPage';
 import { Toaster } from 'sonner';
 import SignInPage from './pages/SignInPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { useThemeStore } from './stores/useThemeStore';
+import { useEffect } from 'react';
 function App() {
+      // handle theme here
+    const { isDark, setTheme } = useThemeStore();
+    useEffect(() => {
+        // on initial load, set the theme based on the store value
+        setTheme(isDark);
+    }, []); // run only once on mount
   return (
     <>
       <Toaster richColors />
