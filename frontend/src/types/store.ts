@@ -36,10 +36,12 @@ export interface ChatState {
     items: Message[];
     hasMore: boolean; // infinite scroll
     nextCursor: string | null; // for pagination
-  }>; 
+  }>;
   activeConversationId: string | null;
-  loading: boolean;
+  conversationLoading: boolean;
+  messageLoading: boolean;
   reset: () => void;
   setActiveConversation: (conversationId: string | null) => void;
   fetchConversations: () => Promise<void>;
+  fetchMessages: (conversationId?: string) => Promise<void>;
 }
