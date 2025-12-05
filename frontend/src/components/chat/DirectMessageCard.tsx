@@ -6,10 +6,12 @@ import { cn } from '@/lib/utils'
 import UserAvatar from './UserAvatar'
 import StatusBadge from './StatusBadge'
 import UnreadCountBadge from './UnreadCountBadge'
+import { useSocketStore } from '@/stores/useSocketStore'
 
 const DirectMessageCard = ({ conversation }: { conversation: Conversation }) => {
     const { user } = useAuthStore()
     const { activeConversationId, setActiveConversation, messages, fetchMessages } = useChatStore()
+    const { onlineUsers } = useSocketStore()
 
     if (!user) {
         return null
@@ -49,7 +51,7 @@ const DirectMessageCard = ({ conversation }: { conversation: Conversation }) => 
                 <>
                     <UserAvatar type='sidebar' name={otherParticipant.displayName ?? ""} avatarUrl={otherParticipant.avatarUrl ?? undefined} />
                     {/* status on/off line thực hiện khi có socket.io */}
-                    <StatusBadge status="online" />
+                    <StatusBadge status={onlineUsers.includes(otherParticipant._id ?? "") ? "online" : "offline"} />
                     {
                         unreadCount > 0 && <UnreadCountBadge unreadCount={unreadCount} />
                     }

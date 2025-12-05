@@ -3,6 +3,7 @@ import type { ChatState } from '@/types/store';
 import { create } from 'zustand';
 import { persist } from "zustand/middleware"
 import { useAuthStore } from './useAuthStore';
+import type { Message } from '@/types/chat';
 
 export const useChatStore = create<ChatState>()(
     persist(
@@ -108,6 +109,48 @@ export const useChatStore = create<ChatState>()(
                     console.error('Failed to send group message:', error);
                 }
             },
+            addMessage: async (message: Message) => {
+                try {
+                    const { user } = useAuthStore.getState();
+                    const { fetchMessages } = get()
+
+                    message.isOwn = message.senderId === user?._id;
+
+                    const conversationId = message.conversationId
+
+                    // Update chat state
+                    let prevItems = get().messages[conversationId]?.items ?? [];
+                    if (prevItems.length === 0) {
+                        await fetchMessages(conversationId);
+                        prevItems = get().messages[conversationId]?.items ?? [];
+                    }
+
+                    set((state) => {
+                        if (prevItems.some(msg => msg._id === message._id)) {
+                            return state;
+                        }
+                        return {
+                            messages: {
+                                ...state.messages,
+                                [conversationId]: {
+                                    items: [...prevItems, message],
+                                    hasMore: state.messages[conversationId]?.hasMore ?? true,
+                                    nextCursor: state.messages[conversationId]?.nextCursor ?? null,
+                                },
+                            },
+                        }
+                    });
+                } catch (error) {
+                    console.error('Failed to add message:', error);
+                }
+            },
+            updateConversation: (conversation) => {
+                set((state) => ({
+                    conversations: state.conversations.map((c) =>
+                        c._id === conversation._id ? { ...c, ...conversation } : c
+                    ),
+                }));
+            }
         })
         , {
             name: "chat-storage",

@@ -21,5 +21,30 @@ export const updateConversationAfterCreateMessage = (conversation, message, send
             isSender ? 0 : prevCount + 1
         );
     });
-    
+
+}
+
+
+// Hỗ trợ phát sự kiện tin nhắn mới qua Socket.IO
+export const emitNewMessage = (io, conversation, message) => {
+    console.log("🚀 ~ emitNewMessage ~ conversation:", conversation)
+    const data = {
+        message,
+        conversation: {
+            _id: conversation._id,
+            lastMessage: conversation.lastMessage,
+            lastMessageAt: conversation.lastMessageAt,
+        },
+        unreadCounts: conversation.unreadCounts
+    }
+    console.log("🚀 ~ emitNewMessage ~ data:", data)
+    io.to(conversation._id.toString()).emit('new-message', {
+        message,
+        conversation: {
+            _id: conversation._id,
+            lastMessage: conversation.lastMessage,
+            lastMessageAt: conversation.lastMessageAt,
+        },
+        unreadCounts: conversation.unreadCounts
+    });
 }

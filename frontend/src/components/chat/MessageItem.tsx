@@ -30,15 +30,18 @@ const MessageItem = (
     const participant = selectedConversation.participants.find(p => p._id.toString() === message.senderId)
 
     return (
-        <div className={cn("flex gap-2 message-bounce", message.isOwn ? "justify-end" : "justify-start")}>
+        <div className={cn("flex gap-2 message-bounce mt-2", message.isOwn ? "justify-end" : "justify-start")}>
             {/* avatar */}
             {!message.isOwn && (<>
                 <div>
-                    {isGroupBreak && (
+                    {isGroupBreak ? (
                         <UserAvatar type="chat" name={participant?.displayName ?? "Moji"} avatarUrl={participant?.avatarUrl ?? undefined} />
+                    ) : (
+                        <div className='w-8'></div>
                     )}
                 </div>
-            </>)}
+            </>)
+            }
             {/* tin nhắn */}
             <div className={cn("max-w-xs lg:max-w-md space-y-1 flex flex-col",
                 message.isOwn ? "items-end" : "items-start"

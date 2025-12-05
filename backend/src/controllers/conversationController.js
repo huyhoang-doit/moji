@@ -150,3 +150,19 @@ export const getMessages = async (req, res) => {
     return res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
+
+export const getUserConversationsForSocketIO = async (userId) => {
+  try {
+    const conversations = await Conversation.find({
+      "participants.userId": userId,
+    }, {
+      _id: 1,
+    }
+    )
+    return conversations.map(conver => conver._id.toString());
+  } catch (error) {
+    console.error("Lỗi xảy ra khi lấy conversations cho Socket.IO", error);
+    return [];
+  }
+
+};
