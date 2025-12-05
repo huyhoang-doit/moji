@@ -5,6 +5,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Send } from "lucide-react";
 import EmojiPicker from "./EmojiPicker";
+import { useChatStore } from "@/stores/useChatStore";
+import { toast } from "sonner";
 
 const MessageInput = ({
     selectedConversation,
@@ -14,7 +16,37 @@ const MessageInput = ({
     const { user } = useAuthStore();
     const [value, setValue] = useState("");
 
+    // function form chat store
+    const { sendDirectMessage, sendGroupMessage } = useChatStore();
+
     if (!user) return;
+
+    const sendMessage = async () => {
+        if (!value.trim()) return;
+        const currenValue = value;
+        setValue("");
+
+        try {
+            if (selectedConversation.type === 'direct') {
+                const participants = selectedConversation.participants;
+                const otherUser = participants.filter((p) => p._id !== user._id)[0];
+
+                await sendDirectMessage(otherUser._id, currenValue.trim());
+            } else if (selectedConversation.type === 'group') {
+                await sendGroupMessage(selectedConversation._id, currenValue.trim());
+            }
+        } catch (error) {
+            console.error("Failed to send message:", error);
+            toast.error("Gửi tin nhắn thất bại. Vui lòng thử lại.");
+        }
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
 
     return (
         <div className="flex items-center gap-2 p-3 min-h-[56px] bg-background">
@@ -27,6 +59,7 @@ const MessageInput = ({
             <div className="flex-1 relative">
                 {/*  Input */}
                 <Input
+                    onKeyDown={handleKeyDown}
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     placeholder="Nhập tin nhắn"
@@ -46,7 +79,9 @@ const MessageInput = ({
                 </div>
             </div>
             {/* Gửi tin nhắn */}
-            <Button className="bg-gradient-chat hover:shadow-glow transition-smooth hover:scale-105" disabled={value.trim() === ""}>
+            <Button className="bg-gradient-chat hover:shadow-glow transition-smooth hover:scale-105" disabled={value.trim() === ""}
+                onClick={sendMessage}
+            >
                 <Send className="size-4 text-white" />
             </Button>
         </div>
